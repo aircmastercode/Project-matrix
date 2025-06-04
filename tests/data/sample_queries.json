@@ -1,0 +1,232 @@
+[
+  {
+    "query": "What is the minimum credit score required for a loan?",
+    "intent": "loan_eligibility",
+    "confidence": 0.95
+  },
+  {
+    "query": "Do I qualify for a personal loan?",
+    "intent": "loan_eligibility", 
+    "confidence": 0.90
+  },
+  {
+    "query": "What documents are needed for loan eligibility?",
+    "intent": "documentation",
+    "confidence": 0.88
+  },
+  {
+    "query": "How do I reset my password?",
+    "intent": "account_management",
+    "confidence": 0.92
+  },
+  {
+    "query": "Cannot access my account",
+    "intent": "account_management",
+    "confidence": 0.85
+  },
+  {
+    "query": "What is the current interest rate?",
+    "intent": "interest_rates",
+    "confidence": 0.91
+  },
+  {
+    "query": "How is interest calculated on loans?",
+    "intent": "interest_rates",
+    "confidence": 0.87
+  },
+  {
+    "query": "What are the repayment options?",
+    "intent": "repayment_terms",
+    "confidence": 0.89
+  },
+  {
+    "query": "How do I change my payment date?",
+    "intent": "repayment_terms",
+    "confidence": 0.86
+  },
+  {
+    "query": "What is the EMI amount for 2 lakh loan?",
+    "intent": "repayment_terms",
+    "confidence": 0.84
+  },
+  {
+    "query": "What documents do I need to upload?",
+    "intent": "documentation",
+    "confidence": 0.93
+  },
+  {
+    "query": "How to upload my PAN card?",
+    "intent": "documentation",
+    "confidence": 0.88
+  },
+  {
+    "query": "Document verification process",
+    "intent": "documentation",
+    "confidence": 0.82
+  },
+  {
+    "query": "What is the processing fee?",
+    "intent": "fees_charges",
+    "confidence": 0.90
+  },
+  {
+    "query": "Are there any hidden charges?",
+    "intent": "fees_charges",
+    "confidence": 0.87
+  },
+  {
+    "query": "Late payment penalty amount",
+    "intent": "fees_charges",
+    "confidence": 0.85
+  },
+  {
+    "query": "How does lumpsum lending work?",
+    "intent": "investment_process",
+    "confidence": 0.89
+  },
+  {
+    "query": "Manual lending process explained",
+    "intent": "investment_process",
+    "confidence": 0.86
+  },
+  {
+    "query": "Portfolio management features",
+    "intent": "investment_process",
+    "confidence": 0.83
+  },
+  {
+    "query": "How does LendenClub work?",
+    "intent": "general_inquiry",
+    "confidence": 0.88
+  },
+  {
+    "query": "Company information and background",
+    "intent": "general_inquiry",
+    "confidence": 0.85
+  },
+  {
+    "query": "I need help with my account",
+    "intent": "general_inquiry",
+    "confidence": 0.75
+  },
+  {
+    "query": "What is my CIBIL score requirement?",
+    "intent": "loan_eligibility",
+    "confidence": 0.92
+  },
+  {
+    "query": "Minimum salary for loan approval",
+    "intent": "loan_eligibility",
+    "confidence": 0.89
+  },
+  {
+    "query": "Can I get a loan with low credit score?",
+    "intent": "loan_eligibility",
+    "confidence": 0.87
+  },
+  {
+    "query": "Update my phone number",
+    "intent": "account_management",
+    "confidence": 0.91
+  },
+  {
+    "query": "Change my email address",
+    "intent": "account_management",
+    "confidence": 0.89
+  },
+  {
+    "query": "Forgot my login credentials",
+    "intent": "account_management",
+    "confidence": 0.86
+  },
+  {
+    "query": "Will my interest rate change?",
+    "intent": "interest_rates",
+    "confidence": 0.84
+  },
+  {
+    "query": "APR calculation method",
+    "intent": "interest_rates",
+    "confidence": 0.82
+  },
+  {
+    "query": "Fixed vs variable interest rates",
+    "intent": "interest_rates",
+    "confidence": 0.80
+  },
+  {
+    "query": "Prepayment charges applicable?",
+    "intent": "fees_charges",
+    "confidence": 0.88
+  },
+  {
+    "query": "What are the additional fees?",
+    "intent": "fees_charges",
+    "confidence": 0.86
+  },
+  {
+    "query": "Closure charges for loan",
+    "intent": "fees_charges",
+    "confidence": 0.84
+  },
+  {
+    "query": "How to extend loan tenure?",
+    "intent": "repayment_terms",
+    "confidence": 0.87
+  },
+  {
+    "query": "Monthly payment schedule",
+    "intent": "repayment_terms",
+    "confidence": 0.85
+  },
+  {
+    "query": "Can I pay extra amount?",
+    "intent": "repayment_terms",
+    "confidence": 0.83
+  },
+  {
+    "query": "Income certificate required?",
+    "intent": "documentation",
+    "confidence": 0.89
+  },
+  {
+    "query": "Bank statement upload process",
+    "intent": "documentation",
+    "confidence": 0.87
+  },
+  {
+    "query": "Aadhaar verification steps",
+    "intent": "documentation",
+    "confidence": 0.85
+  },
+  {
+    "query": "What is auto-invest feature?",
+    "intent": "investment_process",
+    "confidence": 0.88
+  },
+  {
+    "query": "Manual vs automatic lending",
+    "intent": "investment_process",
+    "confidence": 0.86
+  },
+  {
+    "query": "Investment portfolio tracking",
+    "intent": "investment_process",
+    "confidence": 0.84
+  },
+  {
+    "query": "Customer support contact",
+    "intent": "general_inquiry",
+    "confidence": 0.82
+  },
+  {
+    "query": "Platform security measures",
+    "intent": "general_inquiry",
+    "confidence": 0.80
+  },
+  {
+    "query": "How to contact support team?",
+    "intent": "general_inquiry",
+    "confidence": 0.78
+  }
+]
