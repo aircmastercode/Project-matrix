@@ -134,3 +134,9 @@ For issues and questions:
 ---
 
 **Note**: This project uses only free, open-source models and libraries to ensure accessibility and cost-effectiveness.
+
+for checking the backend endpoint 
+first run the main_text_pipeline.py
+then 
+check on the url
+http://localhost:8000/docs#/
