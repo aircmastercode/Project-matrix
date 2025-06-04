@@ -1,1 +1,1 @@
-"""LendenClub Voice Assistant - src.rag_engine module"""
+# Phase 2 component

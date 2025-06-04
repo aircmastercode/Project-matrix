@@ -1,0 +1,124 @@
+# LendenClub Voice Assistant - Phase 2 Configuration (Text-only RAG)
+# Extends Phase 1 configuration with RAG-specific settings
+
+import os
+from pathlib import Path
+
+# Base configuration from Phase 1
+from config.settings import *
+
+# ======== PHASE 2 RAG CONFIGURATION ========
+
+# RAG Model Settings
+RAG_CONFIG = {
+    "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",  # Free, 80MB
+    "vector_dimension": 384,
+    "similarity_threshold": 0.7,
+    "max_retrieved_docs": 5,
+    "chunk_size": 512,
+    "chunk_overlap": 50
+}
+
+# Vector Database Settings  
+FAISS_CONFIG = {
+    "index_type": "IndexFlatIP",  # Inner Product for cosine similarity
+    "index_path": "data/vectorstore/faiss_index.bin",
+    "metadata_path": "data/vectorstore/metadata.json",
+    "rebuild_on_startup": False
+}
+
+# Response Generation Settings
+RESPONSE_CONFIG = {
+    "max_response_length": 500,
+    "include_sources": True,
+    "template_style": "professional",
+    "fallback_response": "I apologize, but I couldn't find specific information about that. Please contact LendenClub support for detailed assistance."
+}
+
+# Text Processing Settings  
+TEXT_PROCESSING = {
+    "remove_html": True,
+    "normalize_whitespace": True,
+    "min_sentence_length": 10,
+    "max_sentence_length": 1000,
+    "language": "en"
+}
+
+# Phase 2 Data Paths (extending Phase 1)
+PHASE2_PATHS = {
+    "embeddings": Path("data/embeddings"),
+    "vectorstore": Path("data/vectorstore"), 
+    "responses": Path("data/responses"),
+    "processed_docs": Path("data/processed/phase2")
+}
+
+# Enhanced Intent Categories for Phase 2 RAG
+ENHANCED_INTENTS = {
+    "loan_eligibility": {
+        "description": "Questions about loan qualification requirements",
+        "keywords": ["eligible", "qualify", "requirement", "criteria", "minimum"],
+        "template": "loan_eligibility_template.txt"
+    },
+    "repayment_terms": {
+        "description": "Payment schedules, EMI, and repayment options", 
+        "keywords": ["payment", "EMI", "repay", "schedule", "due date"],
+        "template": "repayment_template.txt"
+    },
+    "interest_rates": {
+        "description": "Interest rate calculations and changes",
+        "keywords": ["interest", "rate", "APR", "calculation", "charges"],
+        "template": "interest_template.txt"
+    },
+    "documentation": {
+        "description": "Required documents and verification process",
+        "keywords": ["document", "verify", "proof", "submit", "upload"],
+        "template": "documentation_template.txt"
+    },
+    "account_management": {
+        "description": "Profile updates, password, and account settings",
+        "keywords": ["account", "profile", "password", "update", "settings"],
+        "template": "account_template.txt"
+    },
+    "fees_charges": {
+        "description": "Processing fees, penalties, and charges",
+        "keywords": ["fee", "charge", "penalty", "cost", "processing"],
+        "template": "fees_template.txt"
+    },
+    "investment_process": {
+        "description": "How to invest, portfolio management, returns",
+        "keywords": ["invest", "portfolio", "returns", "lend", "FMPP"],
+        "template": "investment_template.txt"
+    },
+    "general_inquiry": {
+        "description": "General questions about LendenClub services",
+        "keywords": ["what", "how", "when", "why", "general"],
+        "template": "general_template.txt"
+    }
+}
+
+# Performance Monitoring (extending Phase 1)
+PHASE2_METRICS = {
+    "rag_retrieval_time": "time to retrieve relevant documents",
+    "response_generation_time": "time to generate final response",
+    "embedding_time": "time to embed user query", 
+    "total_pipeline_time": "end-to-end processing time",
+    "retrieval_relevance": "relevance score of retrieved documents",
+    "response_quality": "quality score of generated response"
+}
+
+# Create Phase 2 directories function
+def create_phase2_directories():
+    """Create necessary directories for Phase 2"""
+    for path in PHASE2_PATHS.values():
+        path.mkdir(parents=True, exist_ok=True)
+        
+    # Create template directory
+    template_dir = Path("src/response_generation/templates")
+    template_dir.mkdir(parents=True, exist_ok=True)
+
+if __name__ == "__main__":
+    create_phase2_directories()
+    print("✅ Phase 2 configuration loaded successfully!")
+    print(f"RAG Model: {RAG_CONFIG['embedding_model']}")
+    print(f"Vector Database: {FAISS_CONFIG['index_type']}")
+    print(f"Enhanced Intents: {len(ENHANCED_INTENTS)} categories")

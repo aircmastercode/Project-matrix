@@ -1,0 +1,343 @@
+# Main Text-based RAG Pipeline for LendenClub Assistant
+# Integrates Phase 1 intent classification with Phase 2 RAG system
+
+import sys
+import json
+import logging
+from pathlib import Path
+from typing import Dict, List, Optional
+import time
+
+# Add src to path for imports
+sys.path.append("src")
+
+# Phase 1 imports
+from intent_classification.models.free_intent_classifier import FreeIntentClassifier
+from data_ingestion.scrapers.lendenclub_scraper import LendenClubScraper
+
+# Phase 2 imports (will be created)
+from rag_engine.vectorstore.faiss_vector_manager import FAISSVectorManager
+from response_generation.text_response_generator import TextResponseGenerator
+
+# Configuration
+try:
+    from config.phase2_config import RAG_CONFIG, FAISS_CONFIG, RESPONSE_CONFIG
+except ImportError:
+    # Fallback configuration
+    RAG_CONFIG = {
+        "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+        "vector_dimension": 384,
+        "similarity_threshold": 0.7,
+        "max_retrieved_docs": 5
+    }
+    FAISS_CONFIG = {
+        "index_type": "IndexFlatIP",
+        "index_path": "data/vectorstore/faiss_index.bin",
+        "metadata_path": "data/vectorstore/metadata.json"
+    }
+    RESPONSE_CONFIG = {
+        "max_response_length": 500,
+        "include_sources": True,
+        "fallback_response": "Please contact LendenClub support for assistance."
+    }
+
+# Setup logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+class LendenClubRAGPipeline:
+    """
+    Complete Text-based RAG Pipeline for LendenClub Assistant
+    Integrates intent classification, document retrieval, and response generation
+    """
+    
+    def __init__(self):
+        self.intent_classifier = None
+        self.vector_manager = None
+        self.response_generator = None
+        self.is_initialized = False
+        
+        logger.info("Initializing LendenClub RAG Pipeline...")
+        
+    def initialize(self):
+        """Initialize all pipeline components"""
+        try:
+            # Initialize intent classifier (Phase 1)
+            logger.info("Loading intent classifier...")
+            self.intent_classifier = FreeIntentClassifier("bart_zero_shot")
+            
+            # Initialize vector database (Phase 2)
+            logger.info("Loading vector database...")
+            self.vector_manager = FAISSVectorManager(FAISS_CONFIG)
+            
+            # Try to load existing index
+            if not self.vector_manager.load_index():
+                logger.info("No existing index found. Will create new one when documents are added.")
+            
+            # Initialize response generator (Phase 2)
+            logger.info("Loading response generator...")
+            self.response_generator = TextResponseGenerator(RESPONSE_CONFIG)
+            
+            self.is_initialized = True
+            logger.info("✅ RAG Pipeline initialized successfully!")
+            
+        except Exception as e:
+            logger.error(f"❌ Error initializing pipeline: {str(e)}")
+            self.is_initialized = False
+            raise
+    
+    def populate_knowledge_base(self, force_scrape: bool = False):
+        """Populate the knowledge base with LendenClub data"""
+        if not self.is_initialized:
+            raise RuntimeError("Pipeline not initialized. Call initialize() first.")
+        
+        try:
+            # Check if we already have documents
+            stats = self.vector_manager.get_stats()
+            if stats["total_documents"] > 0 and not force_scrape:
+                logger.info(f"Knowledge base already contains {stats['total_documents']} documents")
+                return
+            
+            logger.info("Populating knowledge base with LendenClub data...")
+            
+            # Initialize scraper
+            scraper = LendenClubScraper()
+            
+            # Scrape data
+            scraped_data = scraper.scrape()
+            
+            # Process scraped data into documents
+            documents = []
+            metadata = []
+            
+            for source in scraped_data:
+                if source.get("status") == "success" and source.get("content"):
+                    for content_item in source["content"]:
+                        # Split content into chunks for better retrieval
+                        text = content_item.get("text", "")
+                        if len(text) > 100:  # Only add meaningful content
+                            
+                            # Split long texts into chunks
+                            chunks = self._split_text_into_chunks(text, max_length=512)
+                            
+                            for i, chunk in enumerate(chunks):
+                                documents.append(chunk)
+                                metadata.append({
+                                    "source": source["url"],
+                                    "chunk_id": i,
+                                    "selector": content_item.get("selector", "unknown"),
+                                    "length": len(chunk),
+                                    "timestamp": source["timestamp"]
+                                })
+            
+            if documents:
+                # Add to vector database
+                logger.info(f"Adding {len(documents)} document chunks to vector database...")
+                self.vector_manager.add_documents(documents, metadata)
+                
+                # Save the index
+                self.vector_manager.save_index()
+                
+                logger.info("✅ Knowledge base populated successfully!")
+            else:
+                logger.warning("⚠️  No valid documents found to add to knowledge base")
+                
+        except Exception as e:
+            logger.error(f"❌ Error populating knowledge base: {str(e)}")
+            raise
+    
+    def _split_text_into_chunks(self, text: str, max_length: int = 512, overlap: int = 50):
+        """Split text into overlapping chunks for better retrieval"""
+        if len(text) <= max_length:
+            return [text]
+        
+        chunks = []
+        start = 0
+        
+        while start < len(text):
+            end = start + max_length
+            
+            # Try to break at sentence boundary
+            if end < len(text):
+                # Look for sentence end in the last 100 characters
+                sentence_end = text.rfind('.', start + max_length - 100, end)
+                if sentence_end > start + max_length // 2:
+                    end = sentence_end + 1
+            
+            chunk = text[start:end].strip()
+            if chunk:
+                chunks.append(chunk)
+            
+            start = end - overlap
+            if start >= len(text):
+                break
+        
+        return chunks
+    
+    def process_query(self, query: str) -> Dict:
+        """Process a user query through the complete RAG pipeline"""
+        if not self.is_initialized:
+            raise RuntimeError("Pipeline not initialized. Call initialize() first.")
+        
+        start_time = time.time()
+        
+        try:
+            logger.info(f"Processing query: {query}")
+            
+            # Step 1: Intent Classification (Phase 1)
+            intent_start = time.time()
+            intent_result = self.intent_classifier.predict_single(query)
+            intent_time = time.time() - intent_start
+            
+            intent = intent_result.get("intent", "general_inquiry")
+            confidence = intent_result.get("confidence", 0.0)
+            
+            logger.info(f"Intent: {intent} (confidence: {confidence:.3f})")
+            
+            # Step 2: Document Retrieval (Phase 2)
+            retrieval_start = time.time()
+            relevant_docs = self.vector_manager.search(
+                query, 
+                k=RAG_CONFIG["max_retrieved_docs"],
+                threshold=RAG_CONFIG["similarity_threshold"]
+            )
+            retrieval_time = time.time() - retrieval_start
+            
+            logger.info(f"Retrieved {len(relevant_docs)} relevant documents")
+            
+            # Step 3: Response Generation (Phase 2)
+            generation_start = time.time()
+            response = self.response_generator.generate_response(
+                query=query,
+                intent=intent,
+                documents=relevant_docs,
+                confidence=confidence
+            )
+            generation_time = time.time() - generation_start
+            
+            # Add timing information
+            total_time = time.time() - start_time
+            response["timing"] = {
+                "intent_classification": intent_time,
+                "document_retrieval": retrieval_time, 
+                "response_generation": generation_time,
+                "total_time": total_time
+            }
+            
+            logger.info(f"✅ Query processed successfully in {total_time:.3f}s")
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"❌ Error processing query: {str(e)}")
+            return {
+                "response": RESPONSE_CONFIG["fallback_response"],
+                "error": str(e),
+                "intent": "error",
+                "confidence": 0.0,
+                "sources": []
+            }
+    
+    def get_pipeline_stats(self) -> Dict:
+        """Get statistics about the pipeline components"""
+        if not self.is_initialized:
+            return {"status": "not_initialized"}
+        
+        stats = {
+            "status": "initialized",
+            "intent_classifier": {
+                "model_type": self.intent_classifier.model_type,
+                "available_intents": len(self.intent_classifier.intent_labels)
+            },
+            "vector_database": self.vector_manager.get_stats(),
+            "response_generator": {
+                "templates_loaded": len(self.response_generator.templates),
+                "max_response_length": self.response_generator.config.get("max_response_length", "unknown")
+            }
+        }
+        
+        return stats
+    
+    def interactive_mode(self):
+        """Run the pipeline in interactive mode for testing"""
+        if not self.is_initialized:
+            print("❌ Pipeline not initialized!")
+            return
+        
+        print("\n🤖 LendenClub Text Assistant - Interactive Mode")
+        print("=" * 50)
+        print("Ask questions about LendenClub services!")
+        print("Type 'quit' to exit, 'stats' for pipeline statistics")
+        print("=" * 50)
+        
+        while True:
+            try:
+                query = input("\n💬 Your question: ").strip()
+                
+                if query.lower() in ['quit', 'exit', 'q']:
+                    print("👋 Goodbye!")
+                    break
+                
+                if query.lower() == 'stats':
+                    stats = self.get_pipeline_stats()
+                    print("\n📊 Pipeline Statistics:")
+                    print(json.dumps(stats, indent=2))
+                    continue
+                
+                if not query:
+                    print("⚠️  Please enter a question.")
+                    continue
+                
+                # Process the query
+                result = self.process_query(query)
+                
+                # Display results
+                print(f"\n🎯 Intent: {result['intent']} (confidence: {result['confidence']:.3f})")
+                print(f"\n📝 Response:")
+                print("-" * 40)
+                print(result['response'])
+                print("-" * 40)
+                
+                if result.get('sources'):
+                    print(f"\n📚 Sources ({len(result['sources'])}):")
+                    for i, source in enumerate(result['sources'], 1):
+                        print(f"  {i}. {source['content']} (score: {source['relevance_score']:.3f})")
+                
+                if result.get('timing'):
+                    timing = result['timing']
+                    print(f"\n⏱️  Processing time: {timing['total_time']:.3f}s")
+                
+            except KeyboardInterrupt:
+                print("\n👋 Goodbye!")
+                break
+            except Exception as e:
+                print(f"\n❌ Error: {str(e)}")
+
+# Main execution
+def main():
+    """Main function to run the RAG pipeline"""
+    pipeline = LendenClubRAGPipeline()
+    
+    try:
+        # Initialize the pipeline
+        pipeline.initialize()
+        
+        # Populate knowledge base
+        pipeline.populate_knowledge_base()
+        
+        # Show stats
+        stats = pipeline.get_pipeline_stats()
+        print("\n📊 Pipeline Ready!")
+        print(f"  - Documents in knowledge base: {stats['vector_database']['total_documents']}")
+        print(f"  - Available intents: {stats['intent_classifier']['available_intents']}")
+        print(f"  - Response templates: {stats['response_generator']['templates_loaded']}")
+        
+        # Run interactive mode
+        pipeline.interactive_mode()
+        
+    except Exception as e:
+        logger.error(f"❌ Failed to run pipeline: {str(e)}")
+        print(f"❌ Error: {str(e)}")
+
+if __name__ == "__main__":
+    main()
