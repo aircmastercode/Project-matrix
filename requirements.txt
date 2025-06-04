@@ -1,44 +1,47 @@
-# LendenClub Voice Assistant - Dependencies
-# Phase 1: Core functionality
-transformers==4.35.0
-torch==2.1.0
-datasets==2.14.0
-scikit-learn==1.3.0
-pandas==2.1.0
-numpy>=1.24.1,<1.25
-requests==2.31.0
-beautifulsoup4==4.12.2
-lxml==4.9.3
-fake-useragent==1.4.0
+# LendenClub Voice Assistant - Phase 2 Requirements
+# Updated requirements including RAG engine and enhanced scraping
 
-# Testing and development
-pytest==7.4.0
-pytest-cov==4.1.0
-black==23.9.0
-flake8==6.0.0
+# Core ML/AI Libraries
+transformers>=4.30.0          # For BART-Large-MNLI and other models
+torch>=2.0.0                 # PyTorch backend for transformers
+sentence-transformers>=2.2.0  # For document embeddings in RAG
+faiss-cpu>=1.7.4             # Vector database for document search
+scikit-learn>=1.3.0          # Traditional ML algorithms and metrics
 
-# Phase 2: Voice processing (commented for Phase 1)
-# openai-whisper==20231117
-# pyttsx3==2.90
-# speechrecognition==3.10.0
-# pyaudio==0.2.11
+# Web Scraping Enhancement  
+requests>=2.31.0             # HTTP requests
+beautifulsoup4>=4.12.0       # HTML parsing
+fake-useragent>=1.4.0        # User agent rotation for anti-detection
+lxml>=4.9.0                  # Fast XML parser for BeautifulSoup
 
-# Phase 2: Vector database
-# faiss-cpu==1.7.4
-# sentence-transformers==2.2.2
+# Data Processing
+pandas>=2.0.0                # Data manipulation and analysis
+numpy>=1.24.0                # Numerical computations
+python-dateutil>=2.8.0       # Date/time utilities
 
-# Phase 3: Web framework
-# fastapi==0.104.0
-# uvicorn==0.24.0
-# websockets==11.0.2
-# redis==5.0.0
+# Visualization and Reporting
+matplotlib>=3.7.0            # Plotting and visualization
+seaborn>=0.12.0              # Statistical visualizations
+plotly>=5.15.0               # Interactive plots (optional)
 
-# Phase 4: Production
-# prometheus-client==0.17.0
-# kubernetes==28.1.0
-# docker==6.1.0
+# Logging and Configuration
+python-dotenv>=1.0.0         # Environment variable management
+pyyaml>=6.0                  # YAML configuration files
 
-# Visualization
-matplotlib==3.7.2
-seaborn==0.12.2
-plotly==5.17.0
+# Testing Framework
+pytest>=7.4.0               # Testing framework
+pytest-cov>=4.1.0           # Coverage reporting
+
+# Development Tools
+black>=23.0.0                # Code formatting
+flake8>=6.0.0                # Code linting
+mypy>=1.5.0                  # Type checking
+
+# Optional GPU Support (uncomment if you have CUDA GPU)
+# torch>=2.0.0+cu118          # PyTorch with CUDA support
+# faiss-gpu>=1.7.4            # GPU-accelerated FAISS
+
+# Optional Advanced Features
+# streamlit>=1.25.0           # For web interface (Phase 3)
+# fastapi>=0.100.0            # API framework (Phase 4)
+# uvicorn>=0.23.0             # ASGI server (Phase 4)

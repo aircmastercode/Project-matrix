@@ -1,0 +1,34 @@
+[
+  {
+    "id": 0,
+    "text": "Minimum credit score required is 750 for personal loans.",
+    "title": "Credit Requirements",
+    "source": "test",
+    "timestamp": "2025-06-04T12:59:40.758182",
+    "length": 56
+  },
+  {
+    "id": 1,
+    "text": "Minimum salary requirement for personal loans is Rs. 25,000 per month.",
+    "title": "Loan Eligibility Criteria",
+    "source": "lendenclub.com/eligibility",
+    "timestamp": "2025-06-04T13:00:08.487212",
+    "length": 70
+  },
+  {
+    "id": 2,
+    "text": "Interest rates vary from 12% to 36% annually based on credit score.",
+    "title": "Interest Rate Information",
+    "source": "lendenclub.com/rates",
+    "timestamp": "2025-06-04T13:00:08.487216",
+    "length": 67
+  },
+  {
+    "id": 3,
+    "text": "Minimum credit score required is 750 for personal loans.",
+    "title": "Credit Requirements",
+    "source": "test",
+    "timestamp": "2025-06-04T13:05:46.757827",
+    "length": 56
+  }
+]

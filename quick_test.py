@@ -1,24 +1,43 @@
 #!/usr/bin/env python3
-"""Quick test of Phase 1 classifier"""
+"""
+Quick test runner for Phase 2 components
+"""
 
-from src.intent_classification.models.free_intent_classifier import FreeIntentClassifier
+import sys
+import os
+sys.path.append('src')
 
-# Test queries
-queries = [
-    "What is the minimum credit score?",
-    "how the lenden club works and what are its policies also show me the emi process", 
-    "What are the fees?",
-    "EMI calculation method",
-    "Document upload process"
-]
+def quick_test():
+    print("🧪 Running Quick Phase 2 Tests...")
+    
+    # Test FAISS Manager
+    try:
+        from rag_engine.faiss_manager import FAISSManager
+        manager = FAISSManager()
+        print("✅ FAISS Manager: OK")
+    except Exception as e:
+        print(f"❌ FAISS Manager: {e}")
+    
+    # Test Scraper
+    try:
+        from data_ingestion.scrapers.lendenclub_scraper import LendenClubScraper
+        scraper = LendenClubScraper()
+        if hasattr(scraper, 'scrape'):
+            print("✅ Scraper: OK (has scrape method)")
+        else:
+            print("❌ Scraper: Missing scrape method")
+    except Exception as e:
+        print(f"❌ Scraper: {e}")
+    
+    # Test Performance Evaluator
+    try:
+        from intent_classification.evaluator.performance_evaluator import PerformanceEvaluator
+        evaluator = PerformanceEvaluator()
+        print("✅ Performance Evaluator: OK")
+    except Exception as e:
+        print(f"❌ Performance Evaluator: {e}")
+    
+    print("\n🎉 Quick test complete!")
 
-print("🧠 Testing BART-Large-MNLI Classifier")
-print("=" * 40)
-
-classifier = FreeIntentClassifier()
-
-for query in queries:
-    result = classifier.predict_single(query)
-    print(f"'{query}' → {result['intent']} ({result.get('confidence', 0):.2f})")
-
-print("\n✅ Quick test completed!")
+if __name__ == "__main__":
+    quick_test()
