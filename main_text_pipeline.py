@@ -241,6 +241,35 @@ def main():
         reload=True,
         log_level="info"
     )
-
+@app.post("/api/chat/message", response_model=ChatResponse)
+async def chat_endpoint(request: ChatRequest):
+    try:
+        # Validate classifier is loaded
+        if classifier is None:
+            raise HTTPException(status_code=503, detail="Classifier not loaded")
+        
+        # Log the incoming request
+        logger.info(f"Processing query: {request.query}")
+        
+        # Classify intent using BART-Large-MNLI
+        result = classifier.predict_single(request.query)
+        
+        # Generate contextual response
+        response_text = generate_response(result["intent"], result["confidence"])
+        
+        # Create response with explicit snake_case
+        response = ChatResponse(
+            intent=result["intent"],
+            confidence=result["confidence"],
+            response=response_text
+        )
+        
+        logger.info(f"Response: {result['intent']} (confidence: {result['confidence']:.3f})")
+        return response
+        
+    except Exception as e:
+        logger.error(f"Error: {str(e)}")
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"Server error: {str(e)}")
 if __name__ == "__main__":
     main()
